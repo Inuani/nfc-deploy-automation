@@ -1,6 +1,0 @@
-[2024-12-22 18:28:28] Card UID successfully retrieved: 04-1D-53-E2-E5-10-90
-[2024-12-22 18:28:28]     Payload [ASCII] = .K..GU.https://raygen.ch/?uid=..............&ctr=......&cmac=................
-[2024-12-22 18:28:28] Additional NDEF parameters added
-[2024-12-22 18:28:28] NDEF Message written successfully
-[2024-12-22 18:28:28] SDM settings set successfully
-[2024-12-22 18:28:28] Card master key changed successfully to: C882AC472BBC2ECE498E8EAA904FDAC5
