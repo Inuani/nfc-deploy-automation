@@ -710,16 +710,16 @@ def add_additional_ndef_payload_parameter(sdm_payload, param_name, param_value):
 
     #print("NDEF Message length", ndef_message_length)
     #print("NDEF Record length", ndef_record_length)
+    if param_name or param_value:
+        sdm_payload.append(char_to_code('&'))
+        sdm_payload.extend([char_to_code(c) for c in param_name])
+        sdm_payload.append(char_to_code('='))
+        sdm_payload.extend([char_to_code(c) for c in param_value])
 
-    sdm_payload.append(char_to_code('&'))
-    sdm_payload.extend([char_to_code(c) for c in param_name])
-    sdm_payload.append(char_to_code('='))
-    sdm_payload.extend([char_to_code(c) for c in param_value])
+        extended_len = len(param_name) + len(param_value) + 2
 
-    extended_len = len(param_name) + len(param_value) + 2
-
-    sdm_payload[1] = ndef_message_length + extended_len
-    sdm_payload[4] = ndef_record_length + extended_len
+        sdm_payload[1] = ndef_message_length + extended_len
+        sdm_payload[4] = ndef_record_length + extended_len
 
     # Storing the result in a dictionary
     result = {}

@@ -1,0 +1,192 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>nfc deploy canister automation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #status, #principalStatus {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        .success { 
+            background-color: #d4edda !important; 
+            color: #155724; 
+        }
+        .error { 
+            background-color: #f8d7da !important;
+            color: #721c24; 
+        }
+        .principal-id {
+            font-family: monospace;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            margin-top: 10px;
+            display: none;
+        }
+        .hidden {
+            display: none;
+        }
+        #programTagButton {
+            margin-top: 10px;
+        }
+        .status-default { 
+            background-color: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <h1>NFC deploy canister automation</h1>
+    
+    <div>
+        <h2>Reader Controls</h2>
+        <button id="connectButton" class="hidden">Connect Reader</button>
+        <button id="disconnectButton" class="hidden">Disconnect Reader</button>
+        <br/>
+        <button id="programTagButton" class="hidden">Program Tag</button>
+        <div id="status" class="status-default">status</div>
+        
+    </div>
+
+    <div style="margin-top: 20px;">
+        <h2>DFX Commands</h2>
+        <button id="getPrincipalButton">Get Principal ID</button>
+        <div id="principalStatus"></div>
+        <div id="principalId" class="principal-id"></div>
+    </div>
+
+    <script>
+        // Function to check reader state and update UI
+        function checkReaderState() {
+        $.get('/check_reader_state')
+            .done(function(response) {
+                if (response.reader_connected) {
+                    $('#connectButton').addClass('hidden');
+                    $('#disconnectButton').removeClass('hidden');
+                    $('#programTagButton').removeClass('hidden');  // Show program button when connected
+                } else {
+                    $('#connectButton').removeClass('hidden');
+                    $('#disconnectButton').addClass('hidden');
+                    $('#programTagButton').addClass('hidden');  // Hide program button when disconnected
+                }
+            })
+            .fail(function() {
+                $('#connectButton').removeClass('hidden');
+                $('#disconnectButton').addClass('hidden');
+                $('#programTagButton').addClass('hidden');
+            });
+    }
+
+    // Add handler for program button
+    $('#programTagButton').click(function() {
+        $('#status')
+            .removeClass('success error')
+            .addClass('warning')
+            .text('Programming tag...')
+            .show();
+            
+        $.get('/program_tag')
+            .done(function(response) {
+                $('#status')
+                    .removeClass('warning')
+                    .addClass(response.status === 'success' ? 'success' : 'error')
+                    .text(response.message)
+                    .show();
+            })
+            .fail(function() {
+                $('#status')
+                    .removeClass('warning')
+                    .addClass('error')
+                    .text('Failed to communicate with server')
+                    .show();
+            });
+    });
+
+        // Check state when page loads
+        $(document).ready(function() {
+            checkReaderState();
+        });
+
+        $('#connectButton').click(function() {
+    $.get('/connect_reader')
+        .done(function(response) {
+            $('#status')
+                .removeClass('success error')
+                .addClass(response.status === 'success' ? 'success' : 'error')
+                .text(response.message)
+                .show();
+            
+            if (response.status === 'success') {
+                $('#connectButton').addClass('hidden');
+                $('#disconnectButton').removeClass('hidden');
+                $('#programTagButton').removeClass('hidden');  // Show program button
+            }
+        })
+        .fail(function() {
+            $('#status')
+                .removeClass('success error')
+                .addClass('error')
+                .text('Failed to communicate with server')
+                .show();
+        });
+});
+
+$('#disconnectButton').click(function() {
+    $.get('/disconnect_reader')
+        .done(function(response) {
+            $('#status')
+                .removeClass('success error')
+                .addClass(response.status === 'success' ? 'success' : 'error')
+                .text(response.message)
+                .show();
+            
+            if (response.status === 'success') {
+                $('#disconnectButton').addClass('hidden');
+                $('#connectButton').removeClass('hidden');
+                $('#programTagButton').addClass('hidden');  // Hide program button
+            }
+        })
+        .fail(function() {
+            $('#status')
+                .removeClass('success error')
+                .addClass('error')
+                .text('Failed to communicate with server')
+                .show();
+        });
+});
+
+        $('#getPrincipalButton').click(function() {
+            $.get('/get_principal')
+                .done(function(response) {
+                    $('#principalStatus')
+                        .removeClass('success error')
+                        .addClass(response.status === 'success' ? 'success' : 'error')
+                        .text(response.message)
+                        .show();
+                    
+                    if (response.status === 'success') {
+                        $('#principalId')
+                            .text(response.principal)
+                            .show();
+                    } else {
+                        $('#principalId').hide();
+                    }
+                })
+                .fail(function() {
+                    $('#principalStatus')
+                        .removeClass('success error')
+                        .addClass('error')
+                        .text('Failed to communicate with server')
+                        .show();
+                    $('#principalId').hide();
+                });
+        });
+    </script>
+</body>
+</html>
